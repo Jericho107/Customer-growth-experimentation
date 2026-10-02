@@ -37,7 +37,11 @@ def validate_arm(arm: ExperimentArm) -> None:
         raise ValueError("guardrail count outside valid range")
 
 
-def analyse(control: ExperimentArm, treatment: ExperimentArm, min_effect: float = 0.005) -> ExperimentResult:
+def analyse(
+    control: ExperimentArm,
+    treatment: ExperimentArm,
+    min_effect: float = 0.005,
+) -> ExperimentResult:
     validate_arm(control)
     validate_arm(treatment)
     if min_effect < 0:
@@ -45,19 +49,30 @@ def analyse(control: ExperimentArm, treatment: ExperimentArm, min_effect: float 
 
     total = control.visitors + treatment.visitors
     expected = total / 2
-    chi2 = ((control.visitors - expected) ** 2 + (treatment.visitors - expected) ** 2) / expected
-    srm = chi2 > 6.635  # approx p<0.01, df=1
+    chi2 = (
+        (control.visitors - expected) ** 2
+        + (treatment.visitors - expected) ** 2
+    ) / expected
+    srm = chi2 > 6.635
 
-    pc = control.conversions / control.visitors
-    pt = treatment.conversions / treatment.visitors
-    diff = pt - pc
+    control_rate = control.conversions / control.visitors
+    treatment_rate = treatment.conversions / treatment.visitors
+    diff = treatment_rate - control_rate
     pooled = (control.conversions + treatment.conversions) / total
-    null_se = math.sqrt(pooled * (1 - pooled) * (1 / control.visitors + 1 / treatment.visitors))
-    z = diff / null_se if null_se else 0.0
-    p_value = math.erfc(abs(z) / math.sqrt(2))
+    null_se = math.sqrt(
+        pooled
+        * (1 - pooled)
+        * (1 / control.visitors + 1 / treatment.visitors)
+    )
+    z_score = diff / null_se if null_se else 0.0
+    p_value = math.erfc(abs(z_score) / math.sqrt(2))
 
-    ci_se = math.sqrt(pc * (1 - pc) / control.visitors + pt * (1 - pt) / treatment.visitors)
-    ci_low, ci_high = diff - 1.96 * ci_se, diff + 1.96 * ci_se
+    ci_se = math.sqrt(
+        control_rate * (1 - control_rate) / control.visitors
+        + treatment_rate * (1 - treatment_rate) / treatment.visitors
+    )
+    ci_low = diff - 1.96 * ci_se
+    ci_high = diff + 1.96 * ci_se
 
     control_guardrail = control.guardrail_events / control.visitors
     treatment_guardrail = treatment.guardrail_events / treatment.visitors
@@ -75,8 +90,20 @@ def analyse(control: ExperimentArm, treatment: ExperimentArm, min_effect: float 
     else:
         decision = "inconclusive"
 
-    return ExperimentResult(pc, pt, diff, diff / pc if pc else 0.0, z, p_value,
-                            ci_low, ci_high, srm, guardrail_ok, practical, decision)
+    return ExperimentResult(
+        control_rate,
+        treatment_rate,
+        diff,
+        diff / control_rate if control_rate else 0.0,
+        z_score,
+        p_value,
+        ci_low,
+        ci_high,
+        srm,
+        guardrail_ok,
+        practical,
+        decision,
+    )
 
 
 def sample() -> tuple[ExperimentArm, ExperimentArm]:
