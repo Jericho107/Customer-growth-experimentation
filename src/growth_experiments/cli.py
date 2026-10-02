@@ -40,6 +40,18 @@ def reverse_test() -> int:
             {"case": "invalid-min-effect", "status": "FAIL", "error": "corruption accepted"}
         )
 
+    srm = analyse(
+        ExperimentArm("c", 1000, 100, 10),
+        ExperimentArm("t", 2000, 250, 15),
+    )
+    cases.append(
+        {
+            "case": "sample-ratio-mismatch",
+            "status": "PASS" if srm.decision == "invalid-srm" else "FAIL",
+            "error": "SRM blocked" if srm.decision == "invalid-srm" else "SRM accepted",
+        }
+    )
+
     print(json.dumps(cases, indent=2, sort_keys=True))
     return 0 if all(case["status"] == "PASS" for case in cases) else 1
 
