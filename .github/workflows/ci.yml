@@ -32,5 +32,9 @@ jobs:
         run: pytest -q
       - name: Smoke evidence
         run: python -m growth_experiments.cli smoke
+      - name: Generate experiment decision surface
+        run: |
+          python -m growth_experiments.cli report
+          test -s output/experiment_decision_report.html
       - name: Reverse-test evidence
         run: python -m growth_experiments.cli reverse-test
