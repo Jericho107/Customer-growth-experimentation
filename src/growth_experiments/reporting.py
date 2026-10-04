@@ -31,7 +31,10 @@ def experiment_report_html() -> str:
 <p><strong>Illustrative sample size / arm for +1pp MDE:</strong> {required}</p>
 <h2>Segment review</h2>
 <table><thead><tr><th>Segment</th><th>Control</th><th>Treatment</th><th>Lift</th><th>Decision</th></tr></thead><tbody>{rows}</tbody></table>
-<p><small>Synthetic experiment data. Decisions depend on the pre-specified statistical and business rules in the repository.</small></p>
+<p><small>
+Synthetic experiment data. Decisions depend on the pre-specified statistical and
+business rules in the repository.
+</small></p>
 </body></html>"""
 
 
