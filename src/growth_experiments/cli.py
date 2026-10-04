@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sys
 
-from .core import ExperimentArm, analyse, sample, serialise_sample
+from .core import ExperimentArm, analyse, serialise_sample
 from .planning import analyse_segments, sample_segments, sample_size_per_arm
 from .reporting import write_experiment_report
 
@@ -49,7 +49,11 @@ def reverse_test() -> int:
         {
             "case": "segment-harm-guard",
             "status": "PASS" if segmented["decision"] == "hold-segment-harm" else "FAIL",
-            "error": "harmful segment blocks rollout" if segmented["decision"] == "hold-segment-harm" else "segment harm ignored",
+            "error": (
+                "harmful segment blocks rollout"
+                if segmented["decision"] == "hold-segment-harm"
+                else "segment harm ignored"
+            ),
         }
     )
 
